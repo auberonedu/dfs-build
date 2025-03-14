@@ -14,6 +14,21 @@ public class Build {
    * @param k the maximum word length (exclusive)
    */
   public static void printShortWords(Vertex<String> vertex, int k) {
+    if (vertex == null) return;
+    printShortWords(vertex, k, new HashSet<Vertex<String>>());
+  }
+
+  public static void printShortWords(Vertex<String> vertex, int k, Set<Vertex<String>> record) {
+    if (record.contains(vertex)) return;
+    record.add(vertex);
+
+    if (vertex.data.length() < k) {
+      System.out.println(vertex.data);
+    }
+
+    for (var neighbor: vertex.neighbors) {
+      printShortWords(neighbor, k, record);
+    }
   }
 
   /**
@@ -23,7 +38,23 @@ public class Build {
    * @return the longest reachable word, or an empty string if the vertex is null
    */
   public static String longestWord(Vertex<String> vertex) {
-    return "";
+    if (vertex == null) return "";
+    String longestWord = vertex.data;
+    longestWord = longestWord(vertex, longestWord, new HashSet<Vertex<String>>());
+    return longestWord;
+  }
+
+  public static String longestWord(Vertex<String> vertex, String longestWord, HashSet<Vertex<String>> visited) {
+    if (visited.contains(vertex)) return longestWord;
+    visited.add(vertex);
+
+    if (vertex.data.length() > longestWord.length()) longestWord = vertex.data;
+
+    for (var neighbor: vertex.neighbors) {
+      longestWord = longestWord(neighbor, longestWord, visited);
+    }
+
+    return longestWord;
   }
 
   /**
@@ -34,6 +65,21 @@ public class Build {
    * @param <T> the type of values stored in the vertices
    */
   public static <T> void printSelfLoopers(Vertex<T> vertex) {
+    if (vertex == null) return;
+    printSelfLoopers(vertex, new HashSet<Vertex<T>>());
+  }
+
+  public static <T> void printSelfLoopers(Vertex<T> vertex, HashSet<Vertex<T>> record) {
+    if (record.contains(vertex)) return;
+    record.add(vertex);
+
+    if (vertex.neighbors.contains(vertex)) {
+      System.out.println(vertex.data);
+    }
+
+    for (var neighbor: vertex.neighbors) {
+      printSelfLoopers(neighbor, record);
+    }
   }
 
   /**
@@ -45,7 +91,20 @@ public class Build {
    * @return true if the destination is reachable from the start, false otherwise
    */
   public static boolean canReach(Airport start, Airport destination) {
-    return false;
+    return canReach(start, destination, new HashSet<Airport>(), false);
+  }
+
+  public static boolean canReach(Airport start, Airport destination, HashSet<Airport> record, boolean reachable) {
+    if (record.contains(start)) return reachable;
+    record.add(start);
+
+    if (start == destination) return true;
+
+    for (var connection: start.getOutboundFlights()) {
+      reachable = canReach(connection, destination, record, reachable);
+    }
+
+    return reachable;
   }
 
   /**
@@ -58,6 +117,27 @@ public class Build {
    * @return a set of values that cannot be reached from the starting value
    */
   public static <T> Set<T> unreachable(Map<T, List<T>> graph, T starting) {
-    return new HashSet<>();
+    // create a set containing all the values
+    Set<T> unreachableValues = new HashSet<>();
+    for (T key: graph.keySet()) {
+      unreachableValues.add(key);
+    }
+
+    if (!unreachableValues.contains(starting)) return unreachableValues;
+
+    unreachable(graph, starting, new HashSet<T>(), unreachableValues);
+
+    return unreachableValues;
+  }
+
+  public static <T> void unreachable(Map<T, List<T>> graph, T current, Set<T> record, Set<T> unreachableValues) {
+    if (record.contains(current)) return;
+    record.add(current);
+    unreachableValues.remove(current);
+
+    for (var neighbor: graph.get(current)) {
+      unreachable(graph, neighbor, record, unreachableValues);
+    }
+
   }
 }
