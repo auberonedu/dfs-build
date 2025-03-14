@@ -105,6 +105,26 @@ public class Build {
    * @return true if the destination is reachable from the start, false otherwise
    */
   public static boolean canReach(Airport start, Airport destination) {
+    if (start == null || destination == null) return false;
+
+    // Use a HashSet to keep track of visited airports.
+    Set<Airport> visited = new HashSet<>();
+    return canReachHelper(start, destination, visited);
+}
+
+  public static boolean canReachHelper(Airport current, Airport destination, Set<Airport> visited) {
+      if (current == destination) return true;
+
+      visited.add(current);
+
+      // Recurse
+      for (Airport neighbor : current.getOutboundFlights()) {
+          if (!visited.contains(neighbor)) {
+            if (canReachHelper(neighbor, destination, visited)) {
+              return true;
+          }
+        }
+      }
     return false;
   }
 
