@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -113,19 +114,19 @@ public class Build {
 }
 
   public static boolean canReachHelper(Airport current, Airport destination, Set<Airport> visited) {
-      if (current == destination) return true;
+    if (current == destination) return true;
 
-      visited.add(current);
+    visited.add(current);
 
-      // Recurse
-      for (Airport neighbor : current.getOutboundFlights()) {
-          if (!visited.contains(neighbor)) {
-            if (canReachHelper(neighbor, destination, visited)) {
-              return true;
-          }
+    // Recurse
+    for (Airport neighbor : current.getOutboundFlights()) {
+        if (!visited.contains(neighbor)) {
+          if (canReachHelper(neighbor, destination, visited)) {
+            return true;
         }
       }
-    return false;
+    }
+  return false;
   }
 
   /**
@@ -138,6 +139,27 @@ public class Build {
    * @return a set of values that cannot be reached from the starting value
    */
   public static <T> Set<T> unreachable(Map<T, List<T>> graph, T starting) {
-    return new HashSet<>();
+    Set<T> unreachable = new HashSet<>(graph.keySet());
+    if (starting == null) return unreachable;
+
+    // keep track of visited values
+    Set<T> visited = new HashSet<>();
+    unreachableHelper(graph, starting, visited);
+
+    // Remove all reachable values from the unreachable set
+    unreachable.removeAll(visited);
+
+    return unreachable;
+  }
+
+  public static <T> void unreachableHelper(Map<T, List<T>> graph, T current, Set<T> visited) {
+    if (visited.contains(current)) return;
+
+    visited.add(current); 
+
+    // Recurse
+    for (T neighbor : graph.getOrDefault(current, new ArrayList<>())) {
+      unreachableHelper(graph, neighbor, visited);
+    }
   }
 }
